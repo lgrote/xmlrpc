@@ -117,10 +117,29 @@ func TestUnmarshalResp(t *testing.T) {
 
 	m := o.(map[string]interface{})
 	t.Logf("unmarshalled: %+v\n", m)
-	if m1, ok := m["fault"].(map[string]interface{}); ok {
-		if m1["faultCode"].(int64) != 4 {
-			t.Errorf("expected %d but got %d\n", 4, m1["faultCode"])
+	if a, ok := m["params"].([]interface{}); ok {
+		if a[0].(string) != "South Dakota" {
+			t.Errorf("expected %s got %s\n", "South Dakota", a[0])
 		}
+		if a[1].(int64) != 7 {
+			t.Errorf("expected %s got %s\n", 7, a[1])
+		}
+		tim, _ := time.Parse(iso8601Format, "19980717T14:08:55")
+		if a[2].(time.Time) != tim {
+			t.Errorf("expected %s got %s\n", "19980717T14:08:55", a[2])
+		}
+
+		if a[4] != nil {
+			t.Errorf("expected %s got %s\n", "nil", a[4])
+		}
+		if arr, ok := a[5].([]interface{}); ok {
+			if len(arr) != 3 {
+				t.Errorf("expected len %s got %s\n", "3", len(arr))
+			}
+		} else {
+			t.Errorf("expected %s got %T\n", "array", a[5])
+		}
+
 	} else {
 		t.Fatalf("cannot cast %T\n", m["fault"])
 	}

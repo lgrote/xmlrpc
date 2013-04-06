@@ -7,6 +7,7 @@ import (
 	"io"
 	"reflect"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -610,7 +611,7 @@ func (this *encoder) write(o interface{}) {
 			if field.PkgPath == "" {
 				openTag(this.w, memberTag)
 				openTag(this.w, nameTag)
-				xml.Escape(this.w, []byte(field.Name))
+				xml.Escape(this.w, []byte(strings.ToLower(field.Name)))
 				closeTag(this.w, nameTag)
 				openTag(this.w, valueTag)
 				this.write(getField(f, i).Interface())

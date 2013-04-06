@@ -8,16 +8,20 @@ import (
 	"net/url"
 )
 
-type Client struct {
+type Client interface {
+	Call(method string, args ...interface{}) (interface{}, error)
+}
+
+type clientImpl struct {
 	client *http.Client
 	url    *url.URL
 }
 
-func NewClient(url *url.URL) (*Client, error) {
-	return &Client{client: new(http.Client), url: url}, nil
+func NewClient(url *url.URL) (Client, error) {
+	return &clientImpl{client: new(http.Client), url: url}, nil
 }
 
-func (this *Client) Call(method string, args ...interface{}) (interface{}, error) {
+func (this *clientImpl) Call(method string, args ...interface{}) (interface{}, error) {
 
 	var (
 		err  error
@@ -33,10 +37,16 @@ func (this *Client) Call(method string, args ...interface{}) (interface{}, error
 
 	// keep-alive is handled by the transport layer
 	resp, err = http.Post(this.url.String(), "text/xml", buf)
+	if err != nil {
+		return nil, fmt.Errorf("error calling rpc endpoint: %v", err)
+	}
 	var b []byte
 	b, err = ioutil.ReadAll(resp.Body)
-	fmt.Println(string(b))
-	// res, err = Unmarshal(resp.Body)
+	fmt.Printf("Resp: %s\n", string(b))
+	if err != nil {
+		return nil, fmt.Errorf("error reading rpc result body: %v", err)
+	}
+	err = Unmarshal(resp.Body, &res)
 
 	if resp.Close {
 		// ignore error
